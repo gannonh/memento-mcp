@@ -147,7 +147,7 @@ jobs:
         echo "Current version in package.json: $CURRENT_VERSION"
         
         # Get latest version from npm (if it exists)
-        if LATEST_VERSION=$(npm view @gannonh/memento-mcp version 2>/dev/null); then
+        if LATEST_VERSION=$(npm view @adamjbradley/memento-mcp version 2>/dev/null); then
           echo "Latest published version: $LATEST_VERSION"
           
           # Compare versions using node
