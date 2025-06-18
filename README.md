@@ -497,7 +497,7 @@ export MCP_HTTP_HOST=0.0.0.0
 export MCP_HTTP_PORT=8080
 
 # Start the server
-npx @gannonh/memento-mcp
+npx @adamjbradley/memento-mcp
 ```
 
 #### HTTP Endpoints
@@ -538,7 +538,7 @@ Add this to your `claude_desktop_config.json`:
   "mcpServers": {
     "memento": {
       "command": "npx",
-      "args": ["-y", "@gannonh/memento-mcp"],
+      "args": ["-y", "@adamjbradley/memento-mcp"],
       "env": {
         "MEMORY_STORAGE_TYPE": "neo4j",
         "NEO4J_URI": "bolt://127.0.0.1:7687",
@@ -587,7 +587,7 @@ For HTTP transport, configure Claude Desktop to connect to the HTTP server:
 
 > **Note**: Start the HTTP server separately before connecting with Claude Desktop:
 > ```bash
-> MCP_TRANSPORT_MODE=http npx @gannonh/memento-mcp
+> MCP_TRANSPORT_MODE=http npx @adamjbradley/memento-mcp
 > ```
 
 Alternatively, for local development with stdio transport, you can use:
@@ -717,7 +717,7 @@ npm run neo4j:init
 
 ```bash
 # Clone the repository
-git clone https://github.com/gannonh/memento-mcp.git
+git clone https://github.com/adamjbradley/memento-mcp.git
 cd memento-mcp
 
 # Install dependencies
@@ -737,10 +737,10 @@ npm run test:coverage
 
 ### Installing via Smithery
 
-To install memento-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@gannonh/memento-mcp):
+To install memento-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@adamjbradley/memento-mcp):
 
 ```bash
-npx -y @smithery/cli install @gannonh/memento-mcp --client claude
+npx -y @smithery/cli install @adamjbradley/memento-mcp --client claude
 ```
 
 ### Global Installation with npx
@@ -748,7 +748,7 @@ npx -y @smithery/cli install @gannonh/memento-mcp --client claude
 You can run Memento MCP directly using npx without installing it globally:
 
 ```bash
-npx -y @gannonh/memento-mcp
+npx -y @adamjbradley/memento-mcp
 ```
 
 This method is recommended for use with Claude Desktop and other MCP-compatible clients.
@@ -762,7 +762,7 @@ For development or contributing to the project:
 npm install @gannonh/memento-mcp
 
 # Or clone the repository
-git clone https://github.com/gannonh/memento-mcp.git
+git clone https://github.com/adamjbradley/memento-mcp.git
 cd memento-mcp
 npm install
 ```
