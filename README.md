@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/gannonh-memento-mcp-badge.png)](https://mseep.ai/app/gannonh-memento-mcp)
+
 # Memento MCP: A Knowledge Graph Memory System for LLMs
 
 ![Memento MCP Logo](assets/memento-logo-gray.svg)
