@@ -11,6 +11,7 @@ export interface EmbeddingServiceConfig {
   model?: string;
   dimensions?: number;
   apiKey?: string;
+  apiEndpoint?: string;
   [key: string]: unknown;
 }
 
@@ -104,6 +105,7 @@ export class EmbeddingServiceFactory {
       mockEmbeddings: useMockEmbeddings,
       openaiKeyPresent: !!process.env.OPENAI_API_KEY,
       embeddingModel: process.env.OPENAI_EMBEDDING_MODEL || 'default',
+      embeddingEndpoint: process.env.OPENAI_EMBEDDING_ENDPOINT || 'https://api.openai.com/v1/embeddings',
     });
 
     if (useMockEmbeddings) {
@@ -113,6 +115,7 @@ export class EmbeddingServiceFactory {
 
     const openaiApiKey = process.env.OPENAI_API_KEY;
     const embeddingModel = process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small';
+    const embeddingEndpoint = process.env.OPENAI_EMBEDDING_ENDPOINT || 'https://api.openai.com/v1/embeddings';
 
     if (openaiApiKey) {
       try {
@@ -122,6 +125,7 @@ export class EmbeddingServiceFactory {
         const service = new OpenAIEmbeddingService({
           apiKey: openaiApiKey,
           model: embeddingModel,
+          apiEndpoint: embeddingEndpoint,
         });
         logger.info('EmbeddingServiceFactory: OpenAI embedding service created successfully', {
           model: service.getModelInfo().name,
@@ -154,12 +158,14 @@ export class EmbeddingServiceFactory {
   static createOpenAIService(
     apiKey: string,
     model?: string,
-    dimensions?: number
+    dimensions?: number,
+    apiEndpoint?: string
   ): EmbeddingService {
     return new OpenAIEmbeddingService({
       apiKey,
       model,
       dimensions,
+      apiEndpoint,
     });
   }
 
@@ -188,5 +194,6 @@ EmbeddingServiceFactory.registerProvider('openai', (config = {}) => {
     apiKey: config.apiKey,
     model: config.model,
     dimensions: config.dimensions,
+    apiEndpoint: config.apiEndpoint,
   });
 });

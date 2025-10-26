@@ -25,6 +25,11 @@ export interface OpenAIEmbeddingConfig {
    * Optional version string
    */
   version?: string;
+
+  /**
+   * Optional API endpoint URL
+   */
+  apiEndpoint?: string;
 }
 
 // API key error message is defined but not used directly
@@ -75,11 +80,11 @@ export class OpenAIEmbeddingService extends EmbeddingService {
       throw new Error('API key is required for OpenAI embedding service');
     }
 
-    this.apiKey = config.apiKey || process.env.OPENAI_API_KEY || '';
+    this.apiKey = process.env.OPENAI_API_KEY || config.apiKey || '';
     this.model = config.model || 'text-embedding-3-small';
     this.dimensions = config.dimensions || 1536; // text-embedding-3-small has 1536 dimensions
     this.version = config.version || '3.0.0';
-    this.apiEndpoint = 'https://api.openai.com/v1/embeddings';
+    this.apiEndpoint = process.env.OPENAI_EMBEDDING_ENDPOINT || config.apiEndpoint || 'https://api.openai.com/v1/embeddings';
   }
 
   /**
@@ -169,20 +174,21 @@ export class OpenAIEmbeddingService extends EmbeddingService {
           message: axiosError.message,
         });
 
-        // Handle specific error types
-        if (statusCode === 401) {
-          throw new Error('OpenAI API authentication failed - invalid API key');
-        } else if (statusCode === 429) {
-          throw new Error('OpenAI API rate limit exceeded - try again later');
-        } else if (statusCode && statusCode >= 500) {
-          throw new Error(`OpenAI API server error (${statusCode}) - try again later`);
-        }
-
         // Include response data in error if available
         const errorDetails = responseData
           ? `: ${JSON.stringify(responseData).substring(0, 200)}`
           : '';
 
+        // Handle specific error types
+        if (statusCode === 401) {
+          throw new Error(`OpenAI API authentication failed - invalid API key${errorDetails}`);
+        } else if (statusCode === 429) {
+          throw new Error(`OpenAI API rate limit exceeded - try again later${errorDetails}`);
+        } else if (statusCode && statusCode >= 500) {
+          throw new Error(`OpenAI API server error (${statusCode}) - try again later${errorDetails}`);
+        }
+
+        
         throw new Error(`OpenAI API error (${statusCode || 'unknown'})${errorDetails}`);
       }
 
