@@ -90,6 +90,7 @@ NEO4J_SIMILARITY_FUNCTION=cosine
 MEMORY_STORAGE_TYPE=neo4j
 OPENAI_API_KEY=your-openai-api-key
 OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_EMBEDDING_ENDPOINT=https://your-custom-endpoint/v1/embeddings
 
 # Optional Diagnostic Settings
 DEBUG=true
@@ -114,6 +115,7 @@ Or directly in the Claude Desktop configuration:
         "NEO4J_SIMILARITY_FUNCTION": "cosine",
         "OPENAI_API_KEY": "your-openai-api-key",
         "OPENAI_EMBEDDING_MODEL": "text-embedding-3-small",
+        "OPENAI_EMBEDDING_ENDPOINT": "https://your-custom-endpoint/v1/embeddings",
         "DEBUG": "true"
       }
     }
@@ -144,6 +146,7 @@ For vector search functionality, an embedding service is required:
 - `OPENAI_API_KEY`: Your OpenAI API key (required)
 - `OPENAI_EMBEDDING_MODEL`: The embedding model to use (default: `text-embedding-3-small`)
   - Options: `text-embedding-3-small` (1536 dimensions), `text-embedding-3-large` (3072 dimensions)
+- `OPENAI_EMBEDDING_ENDPOINT`: Optional custom endpoint for OpenAI-compatible APIs
 
 #### Optional Configuration
 

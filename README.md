@@ -421,6 +421,7 @@ NEO4J_SIMILARITY_FUNCTION=cosine
 MEMORY_STORAGE_TYPE=neo4j
 OPENAI_API_KEY=your-openai-api-key
 OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_EMBEDDING_ENDPOINT=https://your-custom-endpoint/v1/embeddings
 
 # Debug Settings
 DEBUG=true
