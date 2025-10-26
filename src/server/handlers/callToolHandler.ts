@@ -457,6 +457,7 @@ export async function handleCallToolRequest(
           // Check for OpenAI API key
           const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
           const embeddingModel = process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small';
+          const embeddingEndpoint = process.env.OPENAI_EMBEDDING_ENDPOINT;
 
           // Check if embedding job manager is initialized
           const hasEmbeddingJobManager = !!knowledgeGraphManager.embeddingJobManager;
@@ -569,6 +570,7 @@ export async function handleCallToolRequest(
             storage_type: storageType,
             openai_api_key_present: hasOpenAIKey,
             embedding_model: embeddingModel,
+            embedding_endpoint: embeddingEndpoint,
             embedding_job_manager_initialized: hasEmbeddingJobManager,
             embedding_service_initialized: !!embeddingProviderInfo,
             embedding_service_info: embeddingServiceInfo,

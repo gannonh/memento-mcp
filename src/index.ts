@@ -21,6 +21,7 @@ try {
   // Force debug logging to help troubleshoot
   logger.debug(`OpenAI API key exists: ${!!process.env.OPENAI_API_KEY}`);
   logger.debug(`OpenAI Embedding model: ${process.env.OPENAI_EMBEDDING_MODEL || 'not set'}`);
+  logger.debug(`OpenAI Embedding endpoint: ${process.env.OPENAI_EMBEDDING_ENDPOINT || 'not set'}`);
   logger.debug(`Storage provider type: ${process.env.MEMORY_STORAGE_TYPE || 'default'}`);
 
   // Ensure OPENAI_API_KEY is defined for embedding generation
