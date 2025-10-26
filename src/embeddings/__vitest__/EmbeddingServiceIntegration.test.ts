@@ -145,6 +145,7 @@ describe('Embedding Service Integration', () => {
           new OpenAIEmbeddingService({
             apiKey: config.apiKey || process.env.OPENAI_API_KEY || '',
             model: config.model || 'text-embedding-3-small',
+            apiEndpoint: config.apiEndpoint || process.env.OPENAI_EMBEDDING_ENDPOINT,
           })
       );
 
@@ -152,6 +153,7 @@ describe('Embedding Service Integration', () => {
       const service = EmbeddingServiceFactory.createService({
         provider: 'openai',
         apiKey: process.env.OPENAI_API_KEY,
+        apiEndpoint: process.env.OPENAI_EMBEDDING_ENDPOINT,
       });
 
       expect(service).toBeInstanceOf(OpenAIEmbeddingService);

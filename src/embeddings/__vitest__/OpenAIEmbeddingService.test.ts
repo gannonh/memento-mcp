@@ -28,8 +28,14 @@ const shouldRunTests = hasApiKey && !useMockEmbeddings;
 // Use conditional test functions based on environment
 const conditionalTest = shouldRunTests ? it : it.skip;
 
+// Check for custom endpoint availability
+const hasEndpoint = process.env.OPENAI_EMBEDDING_ENDPOINT !== undefined;
+const shouldRunCompatTests = hasApiKey && hasEndpoint && !useMockEmbeddings;
+const conditionalCompatTest = shouldRunCompatTests ? it : it.skip;
+
 // Log the decision for clarity
 console.log(`OpenAI API tests ${shouldRunTests ? 'WILL' : 'will NOT'} run`);
+console.log(`OpenAI Compat API tests ${shouldRunCompatTests ? 'WILL' : 'will NOT'} run`);
 
 // Set NODE_ENV to match actual runtime
 process.env.NODE_ENV = undefined;
@@ -45,11 +51,42 @@ describe('OpenAIEmbeddingService', () => {
         apiKey: config?.apiKey || process.env.OPENAI_API_KEY!,
         model: config?.model,
         dimensions: config?.dimensions,
+        apiEndpoint: config?.apiEndpoint || process.env.OPENAI_EMBEDDING_ENDPOINT,
       });
     });
 
     // Increase timeout for real API calls
     vi.setConfig({ testTimeout: 15000 });
+  });
+
+  it('should use the endpoint from config if provided', () => {
+    const originalEndpoint = process.env.OPENAI_EMBEDDING_ENDPOINT;
+    delete process.env.OPENAI_EMBEDDING_ENDPOINT;
+    const service = new OpenAIEmbeddingService({
+      apiKey: 'test-key',
+      apiEndpoint: 'https://custom.config.com/v1/embeddings',
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((service as any).apiEndpoint).toBe('https://custom.config.com/v1/embeddings');
+    process.env.OPENAI_EMBEDDING_ENDPOINT = originalEndpoint;
+  });
+
+  it('should use the endpoint from environment variable if not in config', () => {
+    const originalEndpoint = process.env.OPENAI_EMBEDDING_ENDPOINT;
+    process.env.OPENAI_EMBEDDING_ENDPOINT = 'https://custom.env.com/v1/embeddings';
+    const service = new OpenAIEmbeddingService({ apiKey: 'test-key' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((service as any).apiEndpoint).toBe('https://custom.env.com/v1/embeddings');
+    process.env.OPENAI_EMBEDDING_ENDPOINT = originalEndpoint;
+  });
+
+  it('should use the default OpenAI endpoint as a fallback', () => {
+    const originalEndpoint = process.env.OPENAI_EMBEDDING_ENDPOINT;
+    delete process.env.OPENAI_EMBEDDING_ENDPOINT;
+    const service = new OpenAIEmbeddingService({ apiKey: 'test-key' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((service as any).apiEndpoint).toBe('https://api.openai.com/v1/embeddings');
+    process.env.OPENAI_EMBEDDING_ENDPOINT = originalEndpoint;
   });
 
   conditionalTest('should create service instance directly', () => {
@@ -119,6 +156,21 @@ describe('OpenAIEmbeddingService', () => {
     expect(embedding.length).toBe(1536);
 
     // Check for normalization
+    const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+    expect(magnitude).toBeCloseTo(1.0, 5);
+  });
+
+  conditionalCompatTest('should generate embedding for single text input with custom endpoint', async () => {
+    const service = new OpenAIEmbeddingService({
+      apiKey: process.env.OPENAI_API_KEY!,
+      model: 'text-embedding-3-small',
+      apiEndpoint: process.env.OPENAI_EMBEDDING_ENDPOINT!,
+    });
+
+    const embedding = await service.generateEmbedding('Test text for compatible endpoint');
+
+    expect(Array.isArray(embedding)).toBe(true);
+    expect(embedding.length).toBe(1536);
     const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
     expect(magnitude).toBeCloseTo(1.0, 5);
   });

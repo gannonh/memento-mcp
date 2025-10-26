@@ -73,6 +73,12 @@ describe('OpenAI Embedding Live Example', () => {
       expect(magnitude).toBeCloseTo(1.0, 1);
     });
 
+    // Skip similarity check if using a custom endpoint, as the model may be different
+    if (process.env.OPENAI_EMBEDDING_ENDPOINT) {
+      console.log('Skipping similarity check due to custom endpoint');
+      return;
+    }
+
     // Calculate cosine similarities between embeddings to demonstrate semantic relationships
     const similarity12 = calculateCosineSimilarity(embeddings[0], embeddings[1]);
     const similarity13 = calculateCosineSimilarity(embeddings[0], embeddings[2]);
