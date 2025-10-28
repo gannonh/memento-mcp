@@ -81,10 +81,15 @@ export class OpenAIEmbeddingService extends EmbeddingService {
     }
 
     this.apiKey = process.env.OPENAI_API_KEY || config.apiKey || '';
-    this.model = config.model || 'text-embedding-3-small';
+    this.model = config.model ||
+      process.env.EMBEDDING_MODEL ||
+      'text-embedding-3-small';
     this.dimensions = config.dimensions || 1536; // text-embedding-3-small has 1536 dimensions
     this.version = config.version || '3.0.0';
-    this.apiEndpoint = process.env.OPENAI_EMBEDDING_ENDPOINT || config.apiEndpoint || 'https://api.openai.com/v1/embeddings';
+    this.apiEndpoint =
+      config.apiEndpoint ||
+      process.env.EMBEDDING_ENDPOINT ||
+      'https://api.openai.com/v1/embeddings';
   }
 
   /**
@@ -101,16 +106,29 @@ export class OpenAIEmbeddingService extends EmbeddingService {
     logger.debug('Generating embedding', {
       text: text.substring(0, 50) + '...',
       model: this.model,
+      dimensions: this.dimensions,
       apiEndpoint: this.apiEndpoint,
     });
 
     try {
+      const payload: {
+        input: string;
+        model: string;
+        dimensions?: number;
+      } = {
+        input: text,
+        model: this.model,
+      };
+
+      if (process.env.ENABLE_CUSTOM_DIMENSIONS === 'true' && this.dimensions) {
+        payload.dimensions = this.dimensions;
+      }
+
+      console.log('OpenAI Payload:', JSON.stringify(payload, null, 2));
+
       const response = await axios.post<OpenAIEmbeddingResponse>(
         this.apiEndpoint,
-        {
-          input: text,
-          model: this.model,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${this.apiKey}`,
@@ -207,12 +225,22 @@ export class OpenAIEmbeddingService extends EmbeddingService {
    */
   override async generateEmbeddings(texts: string[]): Promise<number[][]> {
     try {
+      const payload: {
+        input: string[];
+        model: string;
+        dimensions?: number;
+      } = {
+        input: texts,
+        model: this.model,
+      };
+
+      if (process.env.ENABLE_CUSTOM_DIMENSIONS === 'true' && this.dimensions) {
+        payload.dimensions = this.dimensions;
+      }
+
       const response = await axios.post<OpenAIEmbeddingResponse>(
         this.apiEndpoint,
-        {
-          input: texts,
-          model: this.model,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${this.apiKey}`,
