@@ -74,7 +74,7 @@ describe('OpenAI Embedding Live Example', () => {
     });
 
     // Skip similarity check if using a custom endpoint, as the model may be different
-    if (process.env.OPENAI_EMBEDDING_ENDPOINT) {
+    if (process.env.EMBEDDING_ENDPOINT) {
       console.log('Skipping similarity check due to custom endpoint');
       return;
     }

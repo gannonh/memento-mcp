@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EmbeddingService } from '../EmbeddingService.js';
 import { DefaultEmbeddingService } from '../DefaultEmbeddingService.js';
 import { OpenAIEmbeddingService } from '../OpenAIEmbeddingService.js';
+import { GoogleEmbeddingService } from '../GoogleEmbeddingService.js';
 import { EmbeddingServiceFactory } from '../EmbeddingServiceFactory.js';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -25,6 +26,14 @@ console.log(`API key available: ${apiKey ? 'true' : 'false'}`);
 // Skip OpenAI integration tests if no key OR mock embeddings enabled
 const shouldRunOpenAITests = apiKey && !useMockEmbeddings;
 const skipIfNoKeyOrMockEnabled = shouldRunOpenAITests ? it : it.skip;
+
+// Check if we have a Google API key in the environment
+const googleApiKey = process.env.GOOGLE_API_KEY;
+console.log(`Google API key available: ${googleApiKey ? 'true' : 'false'}`);
+
+// Skip Google integration tests if no key OR mock embeddings enabled
+const shouldRunGoogleTests = googleApiKey && !useMockEmbeddings;
+const skipIfNoGoogleKeyOrMockEnabled = shouldRunGoogleTests ? it : it.skip;
 
 describe('Embedding Service Integration', () => {
   beforeEach(() => {
@@ -145,7 +154,7 @@ describe('Embedding Service Integration', () => {
           new OpenAIEmbeddingService({
             apiKey: config.apiKey || process.env.OPENAI_API_KEY || '',
             model: config.model || 'text-embedding-3-small',
-            apiEndpoint: config.apiEndpoint || process.env.OPENAI_EMBEDDING_ENDPOINT,
+            apiEndpoint: config.apiEndpoint || process.env.EMBEDDING_ENDPOINT,
           })
       );
 
@@ -153,7 +162,7 @@ describe('Embedding Service Integration', () => {
       const service = EmbeddingServiceFactory.createService({
         provider: 'openai',
         apiKey: process.env.OPENAI_API_KEY,
-        apiEndpoint: process.env.OPENAI_EMBEDDING_ENDPOINT,
+        apiEndpoint: process.env.EMBEDDING_ENDPOINT,
       });
 
       expect(service).toBeInstanceOf(OpenAIEmbeddingService);
@@ -165,6 +174,63 @@ describe('Embedding Service Integration', () => {
 
       // OpenAI's text-embedding-3-small has 1536 dimensions
       expect(embedding.length).toBe(1536);
+
+      // Verify normalization
+      const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+      expect(magnitude).toBeCloseTo(1.0, 5);
+
+      // Generate multiple embeddings
+      const embeddings = await service.generateEmbeddings([
+        'First test sentence',
+        'Second test sentence that is different',
+        'Third completely unrelated sentence about cats',
+      ]);
+
+      expect(embeddings.length).toBe(3);
+
+      // Similar sentences should have higher cosine similarity
+      const cosineSimilarity = (a: number[], b: number[]): number => {
+        const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+        return dotProduct; // Already normalized vectors, so dot product = cosine similarity
+      };
+
+      // Similar sentences should be more similar than dissimilar ones
+      const sim12 = cosineSimilarity(embeddings[0], embeddings[1]);
+      const sim13 = cosineSimilarity(embeddings[0], embeddings[2]);
+
+      // First and second sentences should be more similar than first and third
+      expect(sim12).toBeGreaterThan(sim13);
+    }
+  );
+
+  skipIfNoGoogleKeyOrMockEnabled(
+    'should use real Google embeddings when API key is available',
+    async () => {
+      // Register Google provider
+      EmbeddingServiceFactory.registerProvider(
+        'google',
+        (config: any) =>
+          new GoogleEmbeddingService({
+            apiKey: config.apiKey || process.env.GOOGLE_API_KEY || '',
+            model: config.model || process.env.EMBEDDING_MODEL || 'gemini-embedding-001',
+          })
+      );
+
+      // Create a service with Google
+      const service = EmbeddingServiceFactory.createService({
+        provider: 'google',
+        apiKey: process.env.GOOGLE_API_KEY,
+      });
+
+      expect(service).toBeInstanceOf(GoogleEmbeddingService);
+
+      // Generate an embedding and check properties
+      const embedding = await service.generateEmbedding(
+        'This is a test of the Google embedding service'
+      );
+
+      // Google's embedding-001 has 3072 dimensions
+      expect(embedding.length).toBe(3072);
 
       // Verify normalization
       const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
