@@ -36,7 +36,11 @@ export class DefaultEmbeddingService extends EmbeddingService {
       const isMockMode = process.env.MOCK_EMBEDDINGS === 'true';
       const defaultDimensions = isMockMode ? 1536 : 384;
 
-      this.dimensions = config.dimensions || defaultDimensions;
+      this.dimensions =
+        config.dimensions ||
+        (process.env.EMBEDDING_DIMENSIONS
+          ? parseInt(process.env.EMBEDDING_DIMENSIONS, 10)
+          : defaultDimensions);
       this.modelName = config.model || (isMockMode ? 'text-embedding-3-small-mock' : modelName);
       this.modelVersion = config.version?.toString() || modelVersion;
     }
