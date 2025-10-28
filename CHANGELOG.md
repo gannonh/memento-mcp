@@ -5,6 +5,17 @@ All notable changes to Memento MCP will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-10-28
+
+### Added
+- Support for Google's Gemini embedding models.
+- Ability to specify custom vector dimensions for both Google and OpenAI embedding services.
+- New environment variables `EMBEDDING_DIMENSIONS` and `ENABLE_CUSTOM_DIMENSIONS` to control the new feature.
+- Support for custom OpenAI-compatible API endpoints via the `EMBEDDING_ENDPOINT` environment variable.
+
+### Changed
+- Standardized embedding-related environment variables (`EMBEDDING_MODEL`, `EMBEDDING_ENDPOINT`) for consistency across providers.
+
 ## [0.3.9] - 2025-05-08
 
 ### Changed

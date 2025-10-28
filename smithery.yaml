@@ -10,8 +10,15 @@ startCommand:
       - neo4jUsername
       - neo4jPassword
       - neo4jDatabase
-      - openAiApiKey
     properties:
+      embeddingModel:
+        type: string
+        default: 'text-embedding-3-small'
+        description: The embedding model to use
+      embeddingEndpoint:
+        type: string
+        default: 'https://api.openai.com/v1/embeddings'
+        description: Optional custom endpoint for the embedding service
       neo4jUri:
         type: string
         default: bolt://127.0.0.1:7687
@@ -30,8 +37,10 @@ startCommand:
         description: Neo4j database name
       openAiApiKey:
         type: string
-        default: your-openai-api-key
         description: OpenAI API key for embeddings
+      googleApiKey:
+        type: string
+        description: Google API key for embeddings
   commandFunction:
     # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
     |-
@@ -48,7 +57,9 @@ startCommand:
         NEO4J_VECTOR_DIMENSIONS: '1536',
         NEO4J_SIMILARITY_FUNCTION: 'cosine',
         OPENAI_API_KEY: config.openAiApiKey,
-        OPENAI_EMBEDDING_MODEL: 'text-embedding-3-small',
+        GOOGLE_API_KEY: config.googleApiKey,
+        EMBEDDING_MODEL: config.embeddingModel,
+        EMBEDDING_ENDPOINT: config.embeddingEndpoint,
         DEBUG: 'true'
       }
     })
@@ -57,4 +68,6 @@ startCommand:
     neo4jUsername: neo4j
     neo4jPassword: memento_password
     neo4jDatabase: neo4j
-    openAiApiKey: your-openai-api-key
+    openAiApiKey: 'your-openai-api-key'
+    googleApiKey: 'your-google-api-key'
+    embeddingModel: 'text-embedding-3-small'

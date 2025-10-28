@@ -20,16 +20,18 @@ let embeddingJobManager: EmbeddingJobManager | undefined = undefined;
 try {
   // Force debug logging to help troubleshoot
   logger.debug(`OpenAI API key exists: ${!!process.env.OPENAI_API_KEY}`);
-  logger.debug(`OpenAI Embedding model: ${process.env.OPENAI_EMBEDDING_MODEL || 'not set'}`);
+  logger.debug(`Google API key exists: ${!!process.env.GOOGLE_API_KEY}`);
+  logger.debug(`Embedding model: ${process.env.EMBEDDING_MODEL || 'not set'}`);
+  logger.debug(`Embedding endpoint: ${process.env.EMBEDDING_ENDPOINT || 'not set'}`);
   logger.debug(`Storage provider type: ${process.env.MEMORY_STORAGE_TYPE || 'default'}`);
 
-  // Ensure OPENAI_API_KEY is defined for embedding generation
-  if (!process.env.OPENAI_API_KEY) {
+  // Ensure at least one API key is defined for embedding generation
+  if (!process.env.OPENAI_API_KEY && !process.env.GOOGLE_API_KEY) {
     logger.warn(
-      'OPENAI_API_KEY environment variable is not set. Semantic search will use random embeddings.'
+      'Neither OPENAI_API_KEY nor GOOGLE_API_KEY environment variable is set. Semantic search will use random embeddings.'
     );
   } else {
-    logger.info('OpenAI API key found, will use for generating embeddings');
+    logger.info('API key found, will use for generating embeddings');
   }
 
   // Initialize the embedding service

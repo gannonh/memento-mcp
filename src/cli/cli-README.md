@@ -87,9 +87,13 @@ NEO4J_VECTOR_DIMENSIONS=1536
 NEO4J_SIMILARITY_FUNCTION=cosine
 
 # Embedding Service Configuration
-MEMORY_STORAGE_TYPE=neo4j
-OPENAI_API_KEY=your-openai-api-key
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+- `MEMORY_STORAGE_TYPE`: The storage type to use. Currently, only `neo4j` is supported.
+- `OPENAI_API_KEY`: Your OpenAI API key. For local models (e.g., Ollama, LM Studio), you can set this to any non-empty string like `"ollama"`.
+- `GOOGLE_API_KEY`: Your Google API key.
+- `EMBEDDING_MODEL`: The embedding model to use (e.g., `text-embedding-3-small`, `models/embedding-001`).
+- `EMBEDDING_DIMENSIONS`: The dimensions of the embeddings. **Important:** This value must match the dimensions of your selected model and the `NEO4J_VECTOR_DIMENSIONS`. Set this to the default dimensions of your embedding model. If your model supports other dimensions you MUST also enable `ENABLE_CUSTOM_DIMENSIONS`.
+- `EMBEDDING_ENDPOINT`: Optional custom endpoint for OpenAI-compatible APIs (e.g., `http://localhost:1234/v1/embeddings` for a local model server).
+- `ENABLE_CUSTOM_DIMENSIONS`: Set to `true` or `false`. Controls whether the `dimensions` (for OpenAI and compatible) or `output_dimensionality` (for Google) parameter is passed in the API request. Some models don't support this. Defaults to `false`.
 
 # Optional Diagnostic Settings
 DEBUG=true
@@ -113,7 +117,9 @@ Or directly in the Claude Desktop configuration:
         "NEO4J_VECTOR_DIMENSIONS": "1536",
         "NEO4J_SIMILARITY_FUNCTION": "cosine",
         "OPENAI_API_KEY": "your-openai-api-key",
-        "OPENAI_EMBEDDING_MODEL": "text-embedding-3-small",
+        "GOOGLE_API_KEY": "your-google-api-key",
+        "EMBEDDING_MODEL": "text-embedding-3-small",
+        "EMBEDDING_ENDPOINT": "https://your-custom-endpoint/v1/embeddings",
         "DEBUG": "true"
       }
     }
@@ -141,9 +147,10 @@ The Neo4j CLI tools support the following options:
 
 For vector search functionality, an embedding service is required:
 
-- `OPENAI_API_KEY`: Your OpenAI API key (required)
-- `OPENAI_EMBEDDING_MODEL`: The embedding model to use (default: `text-embedding-3-small`)
-  - Options: `text-embedding-3-small` (1536 dimensions), `text-embedding-3-large` (3072 dimensions)
+- `OPENAI_API_KEY`: Your OpenAI API key.
+- `GOOGLE_API_KEY`: Your Google API key.
+- `EMBEDDING_MODEL`: The embedding model to use (e.g., `text-embedding-3-small`, `gemini-embedding-001`).
+- `EMBEDDING_ENDPOINT`: Optional custom endpoint for compatible APIs.
 
 #### Optional Configuration
 

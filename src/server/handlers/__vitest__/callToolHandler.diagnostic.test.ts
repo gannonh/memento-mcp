@@ -142,7 +142,8 @@ describe('Diagnostic Tool Handlers', () => {
     it('should return configuration diagnostics', async () => {
       // Set up environment for testing
       process.env.OPENAI_API_KEY = 'test-key';
-      process.env.OPENAI_EMBEDDING_MODEL = 'text-embedding-ada-002';
+      process.env.EMBEDDING_MODEL = 'text-embedding-ada-002';
+      process.env.EMBEDDING_ENDPOINT = 'https://api.example.com/v1/embeddings';
 
       // Create request
       const request = {
@@ -159,8 +160,11 @@ describe('Diagnostic Tool Handlers', () => {
       const diagnosticInfo = JSON.parse(result.content[0].text);
 
       // Check diagnostic info
-      expect(diagnosticInfo.openai_api_key_present).toBe(true);
-      expect(diagnosticInfo.embedding_model).toBe('text-embedding-ada-002');
+      expect(diagnosticInfo.embedding_config.openai_api_key_present).toBe(true);
+      expect(diagnosticInfo.embedding_config.model).toBe('text-embedding-ada-002');
+      expect(diagnosticInfo.embedding_config.endpoint).toBe(
+        'https://api.example.com/v1/embeddings'
+      );
       expect(diagnosticInfo.embedding_job_manager_initialized).toBe(true);
       expect(diagnosticInfo.entities_with_embeddings).toBe(0);
       expect(diagnosticInfo).toHaveProperty('embedding_service_info');
@@ -186,7 +190,7 @@ describe('Diagnostic Tool Handlers', () => {
       const diagnosticInfo = JSON.parse(result.content[0].text);
 
       // Check that it shows API key is missing
-      expect(diagnosticInfo.openai_api_key_present).toBe(false);
+      expect(diagnosticInfo.embedding_config.openai_api_key_present).toBe(false);
     });
   });
 

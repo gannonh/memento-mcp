@@ -75,7 +75,7 @@ describe('VectorStoreFactory', () => {
       type: 'neo4j',
       neo4jConfig,
       indexName: 'custom_index',
-      dimensions: 768,
+      dimensions: 3072,
       similarityFunction: 'euclidean',
     });
 
@@ -84,7 +84,7 @@ describe('VectorStoreFactory', () => {
     expect(Neo4jVectorStore).toHaveBeenCalledWith({
       connectionManager: expect.any(Object),
       indexName: 'custom_index',
-      dimensions: 768,
+      dimensions: 3072,
       similarityFunction: 'euclidean',
     });
     // Check that Neo4jVectorStore constructor was called

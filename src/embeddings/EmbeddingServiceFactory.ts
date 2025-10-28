@@ -1,5 +1,6 @@
 import type { EmbeddingService } from './EmbeddingService.js';
 import { DefaultEmbeddingService } from './DefaultEmbeddingService.js';
+import { GoogleEmbeddingService } from './GoogleEmbeddingService.js';
 import { OpenAIEmbeddingService } from './OpenAIEmbeddingService.js';
 import { logger } from '../utils/logger.js';
 
@@ -11,6 +12,7 @@ export interface EmbeddingServiceConfig {
   model?: string;
   dimensions?: number;
   apiKey?: string;
+  apiEndpoint?: string;
   [key: string]: unknown;
 }
 
@@ -103,7 +105,9 @@ export class EmbeddingServiceFactory {
     logger.debug('EmbeddingServiceFactory: Creating service from environment variables', {
       mockEmbeddings: useMockEmbeddings,
       openaiKeyPresent: !!process.env.OPENAI_API_KEY,
-      embeddingModel: process.env.OPENAI_EMBEDDING_MODEL || 'default',
+      googleKeyPresent: !!process.env.GOOGLE_API_KEY,
+      embeddingModel: process.env.EMBEDDING_MODEL || 'default',
+      embeddingEndpoint: process.env.EMBEDDING_ENDPOINT,
     });
 
     if (useMockEmbeddings) {
@@ -111,34 +115,74 @@ export class EmbeddingServiceFactory {
       return new DefaultEmbeddingService();
     }
 
+    const embeddingModel = process.env.EMBEDDING_MODEL;
+    const embeddingDimensions = process.env.EMBEDDING_DIMENSIONS
+      ? parseInt(process.env.EMBEDDING_DIMENSIONS, 10)
+      : undefined;
+    const embeddingEndpoint = process.env.EMBEDDING_ENDPOINT;
     const openaiApiKey = process.env.OPENAI_API_KEY;
-    const embeddingModel = process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small';
+    const googleApiKey = process.env.GOOGLE_API_KEY;
 
-    if (openaiApiKey) {
-      try {
-        logger.debug('EmbeddingServiceFactory: Creating OpenAI embedding service', {
-          model: embeddingModel,
-        });
-        const service = new OpenAIEmbeddingService({
-          apiKey: openaiApiKey,
-          model: embeddingModel,
-        });
-        logger.info('EmbeddingServiceFactory: OpenAI embedding service created successfully', {
-          model: service.getModelInfo().name,
-          dimensions: service.getModelInfo().dimensions,
-        });
-        return service;
-      } catch (error) {
-        logger.error('EmbeddingServiceFactory: Failed to create OpenAI service', error);
-        logger.info('EmbeddingServiceFactory: Falling back to default embedding service');
-        // Fallback to default if OpenAI service creation fails
-        return new DefaultEmbeddingService();
+    let provider: 'google' | 'openai' | undefined;
+
+    // Determine provider based on model name first
+    if (embeddingModel) {
+      if (embeddingModel.startsWith('models/') || embeddingModel.includes('embedding-00')) {
+        provider = 'google';
+      } else if (embeddingModel.startsWith('text-embedding-')) {
+        provider = 'openai';
       }
     }
 
-    // No OpenAI API key, using default embedding service
+    // If provider not determined by model, use API keys as a fallback
+    if (!provider) {
+      if (openaiApiKey) {
+        provider = 'openai';
+      } else if (googleApiKey) {
+        provider = 'google';
+      }
+    }
+
+    logger.debug(`EmbeddingServiceFactory: Selected provider "${provider || 'none'}"`);
+
+    if (provider === 'google') {
+      if (!googleApiKey) {
+        logger.error('Google provider selected, but GOOGLE_API_KEY is missing.');
+      } else {
+        try {
+          logger.debug('EmbeddingServiceFactory: Creating Google embedding service.');
+          return new GoogleEmbeddingService({
+            apiKey: googleApiKey,
+            model: embeddingModel,
+            dimensions: embeddingDimensions,
+            apiEndpoint: embeddingEndpoint,
+          });
+        } catch (error) {
+          logger.error('EmbeddingServiceFactory: Failed to create Google service', error);
+        }
+      }
+    }
+
+    if (provider === 'openai') {
+      if (!openaiApiKey) {
+        logger.error('OpenAI provider selected, but OPENAI_API_KEY is missing.');
+      } else {
+        try {
+          logger.debug('EmbeddingServiceFactory: Creating OpenAI embedding service.');
+          return new OpenAIEmbeddingService({
+            apiKey: openaiApiKey,
+            model: embeddingModel || 'text-embedding-3-small',
+            dimensions: embeddingDimensions,
+            apiEndpoint: embeddingEndpoint,
+          });
+        } catch (error) {
+          logger.error('EmbeddingServiceFactory: Failed to create OpenAI service', error);
+        }
+      }
+    }
+
     logger.info(
-      'EmbeddingServiceFactory: No OpenAI API key found, using default embedding service'
+      'EmbeddingServiceFactory: No provider could be successfully initialized. Falling back to default service.'
     );
     return new DefaultEmbeddingService();
   }
@@ -154,12 +198,14 @@ export class EmbeddingServiceFactory {
   static createOpenAIService(
     apiKey: string,
     model?: string,
-    dimensions?: number
+    dimensions?: number,
+    apiEndpoint?: string
   ): EmbeddingService {
     return new OpenAIEmbeddingService({
       apiKey,
       model,
       dimensions,
+      apiEndpoint,
     });
   }
 
@@ -185,6 +231,18 @@ EmbeddingServiceFactory.registerProvider('openai', (config = {}) => {
   }
 
   return new OpenAIEmbeddingService({
+    apiKey: config.apiKey,
+    model: config.model,
+    dimensions: config.dimensions,
+    apiEndpoint: config.apiEndpoint,
+  });
+});
+
+EmbeddingServiceFactory.registerProvider('google', (config = {}) => {
+  if (!config.apiKey) {
+    throw new Error('API key is required for Google embedding service');
+  }
+  return new GoogleEmbeddingService({
     apiKey: config.apiKey,
     model: config.model,
     dimensions: config.dimensions,

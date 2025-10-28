@@ -25,6 +25,11 @@ export interface OpenAIEmbeddingConfig {
    * Optional version string
    */
   version?: string;
+
+  /**
+   * Optional API endpoint URL
+   */
+  apiEndpoint?: string;
 }
 
 // API key error message is defined but not used directly
@@ -75,11 +80,16 @@ export class OpenAIEmbeddingService extends EmbeddingService {
       throw new Error('API key is required for OpenAI embedding service');
     }
 
-    this.apiKey = config.apiKey || process.env.OPENAI_API_KEY || '';
-    this.model = config.model || 'text-embedding-3-small';
+    this.apiKey = process.env.OPENAI_API_KEY || config.apiKey || '';
+    this.model = config.model ||
+      process.env.EMBEDDING_MODEL ||
+      'text-embedding-3-small';
     this.dimensions = config.dimensions || 1536; // text-embedding-3-small has 1536 dimensions
     this.version = config.version || '3.0.0';
-    this.apiEndpoint = 'https://api.openai.com/v1/embeddings';
+    this.apiEndpoint =
+      config.apiEndpoint ||
+      process.env.EMBEDDING_ENDPOINT ||
+      'https://api.openai.com/v1/embeddings';
   }
 
   /**
@@ -96,16 +106,29 @@ export class OpenAIEmbeddingService extends EmbeddingService {
     logger.debug('Generating embedding', {
       text: text.substring(0, 50) + '...',
       model: this.model,
+      dimensions: this.dimensions,
       apiEndpoint: this.apiEndpoint,
     });
 
     try {
+      const payload: {
+        input: string;
+        model: string;
+        dimensions?: number;
+      } = {
+        input: text,
+        model: this.model,
+      };
+
+      if (process.env.ENABLE_CUSTOM_DIMENSIONS === 'true' && this.dimensions) {
+        payload.dimensions = this.dimensions;
+      }
+
+      console.log('OpenAI Payload:', JSON.stringify(payload, null, 2));
+
       const response = await axios.post<OpenAIEmbeddingResponse>(
         this.apiEndpoint,
-        {
-          input: text,
-          model: this.model,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${this.apiKey}`,
@@ -169,20 +192,21 @@ export class OpenAIEmbeddingService extends EmbeddingService {
           message: axiosError.message,
         });
 
-        // Handle specific error types
-        if (statusCode === 401) {
-          throw new Error('OpenAI API authentication failed - invalid API key');
-        } else if (statusCode === 429) {
-          throw new Error('OpenAI API rate limit exceeded - try again later');
-        } else if (statusCode && statusCode >= 500) {
-          throw new Error(`OpenAI API server error (${statusCode}) - try again later`);
-        }
-
         // Include response data in error if available
         const errorDetails = responseData
           ? `: ${JSON.stringify(responseData).substring(0, 200)}`
           : '';
 
+        // Handle specific error types
+        if (statusCode === 401) {
+          throw new Error(`OpenAI API authentication failed - invalid API key${errorDetails}`);
+        } else if (statusCode === 429) {
+          throw new Error(`OpenAI API rate limit exceeded - try again later${errorDetails}`);
+        } else if (statusCode && statusCode >= 500) {
+          throw new Error(`OpenAI API server error (${statusCode}) - try again later${errorDetails}`);
+        }
+
+        
         throw new Error(`OpenAI API error (${statusCode || 'unknown'})${errorDetails}`);
       }
 
@@ -201,12 +225,22 @@ export class OpenAIEmbeddingService extends EmbeddingService {
    */
   override async generateEmbeddings(texts: string[]): Promise<number[][]> {
     try {
+      const payload: {
+        input: string[];
+        model: string;
+        dimensions?: number;
+      } = {
+        input: texts,
+        model: this.model,
+      };
+
+      if (process.env.ENABLE_CUSTOM_DIMENSIONS === 'true' && this.dimensions) {
+        payload.dimensions = this.dimensions;
+      }
+
       const response = await axios.post<OpenAIEmbeddingResponse>(
         this.apiEndpoint,
-        {
-          input: texts,
-          model: this.model,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${this.apiKey}`,

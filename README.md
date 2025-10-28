@@ -418,12 +418,16 @@ NEO4J_VECTOR_DIMENSIONS=1536
 NEO4J_SIMILARITY_FUNCTION=cosine
 
 # Embedding Service Configuration
-MEMORY_STORAGE_TYPE=neo4j
-OPENAI_API_KEY=your-openai-api-key
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+- `MEMORY_STORAGE_TYPE`: The storage type to use. Currently, only `neo4j` is supported.
+- `OPENAI_API_KEY`: Your OpenAI API key. For local models (e.g., Ollama, LM Studio), you can set this to any non-empty string like `"ollama"`.
+- `GOOGLE_API_KEY`: Your Google API key.
+- `EMBEDDING_MODEL`: The embedding model to use (e.g., `text-embedding-3-small`, `models/embedding-001`).
+- `EMBEDDING_DIMENSIONS`: The dimensions of the embeddings. **Important:** This value must match the dimensions of your selected model and the `NEO4J_VECTOR_DIMENSIONS`. Set this to the default dimensions of your embedding model. If your model supports other dimensions you MUST also enable `ENABLE_CUSTOM_DIMENSIONS`.
+- `EMBEDDING_ENDPOINT`: Optional custom endpoint for OpenAI-compatible APIs (e.g., `http://localhost:1234/v1/embeddings` for a local model server).
+- `ENABLE_CUSTOM_DIMENSIONS`: Set to `true` or `false`. Controls whether the `dimensions` (for OpenAI and compatible) or `output_dimensionality` (for Google) parameter is passed in the API request. Some models don't support this. Defaults to `false`.
 
 # Debug Settings
-DEBUG=true
+- `DEBUG`: Set to `true` to enable debug logging.
 ```
 
 ### Command Line Options
@@ -450,9 +454,13 @@ Available OpenAI embedding models:
 - `text-embedding-3-large`: Higher accuracy, more expensive (3072 dimensions)
 - `text-embedding-ada-002`: Legacy model (1536 dimensions)
 
+Available Google embedding models:
+
+- `gemini-embedding-001`: A powerful and efficient model (3072 dimensions)
+
 #### OpenAI API Configuration
 
-To use semantic search, you'll need to configure OpenAI API credentials:
+To use semantic search with OpenAI, you'll need to configure your API credentials:
 
 1. Obtain an API key from [OpenAI](https://platform.openai.com/api-keys)
 2. Configure your environment with:
@@ -461,7 +469,23 @@ To use semantic search, you'll need to configure OpenAI API credentials:
 # OpenAI API Key for embeddings
 OPENAI_API_KEY=your-openai-api-key
 # Default embedding model
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+EMBEDDING_MODEL=text-embedding-3-small
+EMBEDDING_DIMENSIONS=1536
+```
+
+#### Google API Configuration
+
+To use semantic search with Google, you'll need to configure your API credentials:
+
+1. Obtain an API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Configure your environment with:
+
+```bash
+# Google API Key for embeddings
+GOOGLE_API_KEY=your-google-api-key
+# Default embedding model
+EMBEDDING_MODEL=gemini-embedding-001
+EMBEDDING_DIMENSIONS=3072
 ```
 
 > **Note**: For testing environments, the system will mock embedding generation if no API key is provided. However, using real embeddings is recommended for integration testing.
@@ -488,7 +512,9 @@ Add this to your `claude_desktop_config.json`:
         "NEO4J_VECTOR_DIMENSIONS": "1536",
         "NEO4J_SIMILARITY_FUNCTION": "cosine",
         "OPENAI_API_KEY": "your-openai-api-key",
-        "OPENAI_EMBEDDING_MODEL": "text-embedding-3-small",
+        "GOOGLE_API_KEY": "your-google-api-key",
+        "EMBEDDING_MODEL": "text-embedding-3-small",
+        "EMBEDDING_DIMENSIONS": "1536",
         "DEBUG": "true"
       }
     }
