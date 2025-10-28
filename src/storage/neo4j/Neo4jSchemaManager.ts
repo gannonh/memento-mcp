@@ -46,6 +46,10 @@ export class Neo4jSchemaManager {
   async listConstraints(): Promise<Record<string, unknown>[]> {
     this.log('Listing existing constraints...');
     const result = await this.connectionManager.executeQuery('SHOW CONSTRAINTS', {});
+    if (!result || !result.records) {
+      this.log('Could not retrieve constraints or no constraints found.');
+      return [];
+    }
     const constraints = result.records.map((record) => record.toObject());
     this.log(`Found ${constraints.length} constraints`);
     return constraints;
@@ -58,6 +62,10 @@ export class Neo4jSchemaManager {
   async listIndexes(): Promise<Record<string, unknown>[]> {
     this.log('Listing existing indexes...');
     const result = await this.connectionManager.executeQuery('SHOW INDEXES', {});
+    if (!result || !result.records) {
+      this.log('Could not retrieve indexes or no indexes found.');
+      return [];
+    }
     const indexes = result.records.map((record) => record.toObject());
     this.log(`Found ${indexes.length} indexes`);
     return indexes;
