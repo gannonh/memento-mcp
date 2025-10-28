@@ -454,10 +454,12 @@ export async function handleCallToolRequest(
       case 'debug_embedding_config':
         // Diagnostic tool to check embedding configuration
         try {
-          // Check for OpenAI API key
-          const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
-          const embeddingModel = process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small';
-          const embeddingEndpoint = process.env.OPENAI_EMBEDDING_ENDPOINT;
+         // Check for API keys
+         const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
+          
+          const hasGoogleKey = !!process.env.GOOGLE_API_KEY;
+          const embeddingModel = process.env.EMBEDDING_MODEL;
+          const embeddingEndpoint = process.env.EMBEDDING_ENDPOINT;
 
           // Check if embedding job manager is initialized
           const hasEmbeddingJobManager = !!knowledgeGraphManager.embeddingJobManager;
@@ -568,9 +570,12 @@ export async function handleCallToolRequest(
           // Return diagnostic information with proper formatting
           const diagnosticInfo = {
             storage_type: storageType,
-            openai_api_key_present: hasOpenAIKey,
-            embedding_model: embeddingModel,
-            embedding_endpoint: embeddingEndpoint,
+            embedding_config: {
+              model: embeddingModel,
+              endpoint: embeddingEndpoint,
+              openai_api_key_present: hasOpenAIKey,
+              google_api_key_present: hasGoogleKey,
+            },
             embedding_job_manager_initialized: hasEmbeddingJobManager,
             embedding_service_initialized: !!embeddingProviderInfo,
             embedding_service_info: embeddingServiceInfo,
