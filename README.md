@@ -1,3 +1,7 @@
+I kept up with Dependabot for this project for a very long time, even after I personally stopped using it. The recent advances in AST handling of programming languages have pretty much permanently shifted my attention.
+
+I don't *think* anyone uses this, if you do let me know. Sans input, it's getting deleted in early summer of 2026.
+
 # Memento MCP: A Knowledge Graph Memory System for LLMs
 
 ![Memento MCP Logo](assets/memento-logo-gray.svg)
