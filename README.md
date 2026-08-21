@@ -5,7 +5,7 @@
 Scalable, high performance knowledge graph memory system with semantic retrieval, contextual recall, and temporal awareness. Provides any LLM client that supports the model context protocol (e.g., Claude Desktop, Cursor, Github Copilot) with resilient, adaptive, and persistent long-term ontological memory.
 
 [![Memento MCP Tests](https://github.com/gannonh/memento-mcp/actions/workflows/memento-mcp.yml/badge.svg)](https://github.com/gannonh/memento-mcp/actions/workflows/memento-mcp.yml)
-[![smithery badge](https://smithery.ai/badge/@gannonh/memento-mcp)](https://smithery.ai/server/@gannonh/memento-mcp)
+[![Listed on Skillselion](https://skillselion.com/badge/mcp/tool/io.github.gannonh/memento-mcp.svg)](https://skillselion.com/mcp/tool/io.github.gannonh/memento-mcp)
 
 ## Core Concepts
 
